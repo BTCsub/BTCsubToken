@@ -1,38 +1,82 @@
-pragma solidity ^0.5.0;
+pragma solidity >= 0.5.0 < 0.6.0;
 
-import './lib/Oracle/provableAPI_0.5.sol';
+import "./lib/Oracle/provableAPI.sol";
 
-contract DataOracle is usingProvable {
+contract DataOracle is usingProvable  {
+
+
+    string public priceBTCUSD;
+    string public priceTUSD;
+    string public priceETHUSDT;
+    string public priceBCHUSD;
+    string public priceXTZUSD;
+    string public priceCOMPUSD;
+    string public priceLTCUSDT;
+    string public priceADAUSD;
+    string public priceBUSD;
+    string public priceUSD;
     
-    string GET_BTC_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD).price";
-    string GET_ETH_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD).price";
-    string GET_BCH_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=USD).price";
-    string GET_USD_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=USD&tsyms=USD).price";
-    string GET_TUSD_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=TUSD&tsyms=USD).price";
-    string GET_BUSD_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=BUSD&tsyms=USD).price";
-    string GET_XTZ_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=XTZ&tsyms=USD).price";
-    string GET_COMP_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=COMP&tsyms=USD).price";
-    string GET_LTC_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=LTC&tsyms=USD).price";
-    string GET_ADA_PRICE_QUERY = "json(https://min-api.cryptocompare.com/data/price?fsym=ADA&tsyms=USD).price";
-    
-    event LogNewProvableQuery(string description);
-    event LogNewProvableResult(string result);
-    event LogConstructorInitiated(string nextStep);
+      // oraclize callback types:
+      enum oraclizeState { ForBTC, ForTUSD , ForETH, ForBCH, ForXTZ, ForCOMP, ForLTC, ForADA, ForBUSD, ForUSD }
 
-    mapping (bytes32 => bool) public pendingQueries;
-    string public result;
-    address public owner;
+   
+  //Events
+      event LOG_BTCUSD(
+                string result
+      );
+      
+      event LOG_USD(
+                string result
+      );
 
+      event LOG_TUSD(
+                string result
+      );
+      
+       event LOG_ETHUSD(
+                string result
+      );
 
+      event LOG_BCHUSD(
+                string result
+      );
+      
+       event LOG_XTZUSD(
+                string result
+      );
 
-    constructor() public payable {
-        provable_setProof(proofType_TLSNotary | proofStorage_IPFS);
-        owner = msg.sender;
-        emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
-        provable_setCustomGasPrice(1000000000 wei);
-    }
+      event LOG_COMPUSD(
+                string result
+      );
+      
+       event LOG_LTCUSDT(
+                string result
+      );
 
-    modifier onlyOwner {
+      event LOG_ADAUSD(
+                string result
+      );
+      
+      event LOG_BUSD(
+                string result
+      );
+      
+
+       // the oraclize callback structure: we use several oraclize calls.
+       // all oraclize calls will result in a common callback to __callback(...).
+       // to keep track of the different querys we have to introduce this struct.
+       
+       
+       
+      struct oraclizeCallback {
+            // for which purpose did we call? {ForUSD | ForDistance}
+            oraclizeState oState;
+      }
+      // Lookup state from queryIds
+      mapping (bytes32 => oraclizeCallback) public oraclizeCallbacks;
+      address public owner;
+      
+          modifier onlyOwner {
         require(owner == msg.sender);
         _;
     }
@@ -41,115 +85,132 @@ contract DataOracle is usingProvable {
         provable_setCustomGasPrice(_newGasPrice);
     }
 
-    function __callback(bytes32 _myid, string memory _result) public {
-        require(msg.sender == provable_cbAddress());
-        require (pendingQueries[_myid] == true);
+    
+      // constructor
+      constructor() public {
+              owner = msg.sender;
+             
+      }
+      //Function for distance retrieval
+      function BTCPrice() public payable returns(bool sufficient) {
+           
+            bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/BTC-USD/ticker).price");
+            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBTC);
+            return true;
+      }
 
-        result = _result;
-        emit LogNewProvableResult(_result);
+      function TUSDPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/TUSD-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForTUSD);
+         return true;
+      }
+      
+      function USDPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/USD-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForUSD);
+         return true;
+      }
+      
+      function BUSDPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/BUSD-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBUSD);
+         return true;
+      }
+      
+       function ETHTPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForETH);
+         return true;
+      }
+      
+      
+       function BCHPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/BCH-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBCH);
+         return true;
+      }
+      
+       function XTZPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://min-api.cryptocompare.com/data/price?fsym=TUSD&tsyms=USD).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForXTZ);
+         return true;
+      }
+      
+       function COMPPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/COMP-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForCOMP);
+         return true;
+      }
+      
+       function LTCTPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/LTC-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForLTC);
+         return true;
+      }
+      
+         function ADAPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","json(https://api.pro.coinbase.com/products/ADA-USD/ticker).price");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForADA);
+         return true;
+      }
 
-        delete pendingQueries[_myid]; // This effectively marks the query id as processed.
-    }
 
-    function BTCPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_BTC_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function ETHPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_ETH_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function BCHPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_BCH_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function USDPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_USD_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    
-    function TUSDPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_TUSD_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function BUSDPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_BUSD_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function XTZPrice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_XTZ_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-    function COMPprice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_COMP_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
+      //Function callback
+      function __callback(bytes32 myid, string memory result) public {
 
-    function LTCprice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_LTC_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
-        function ADAprice() public payable {
-        if (provable_getPrice("URL") > msg.value) {
-            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
-        } else {
-            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
-            bytes32 queryId = provable_query("URL", GET_ADA_PRICE_QUERY);
-            pendingQueries[queryId] = true;
-        }
-    }
-    
+                 if (msg.sender != provable_cbAddress()) revert();
+                 oraclizeCallback memory o = oraclizeCallbacks[myid];
+                 
+                 
+                 if (o.oState == oraclizeState.ForBTC) {
+                     priceBTCUSD = result;
+                     emit LOG_BTCUSD(result); 
+                  }
+                  else if(o.oState == oraclizeState.ForTUSD) {
+                   priceTUSD = result;
+                   emit LOG_TUSD(result);
+                 }
+                 else if(o.oState == oraclizeState.ForUSD) {
+                   priceUSD = result;
+                   emit LOG_USD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForETH) {
+                   priceETHUSDT = result;
+                   emit LOG_ETHUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForBCH) {
+                   priceBCHUSD = result;
+                   emit LOG_BCHUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForXTZ) {
+                   priceXTZUSD = result;
+                   emit LOG_XTZUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForCOMP) {
+                   priceCOMPUSD = result;
+                   emit LOG_COMPUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForLTC) {
+                   priceLTCUSDT = result;
+                   emit LOG_LTCUSDT(result);
+                 }
+                 
+                   else if(o.oState == oraclizeState.ForBUSD) {
+                   priceBUSD = result;
+                   emit LOG_BUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForADA) {
+                   priceADAUSD = result;
+                   emit LOG_ADAUSD(result);
+                 }
+      }
 }
