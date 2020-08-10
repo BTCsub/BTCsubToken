@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 const PriceInfoSchema = new Schema(
   {
-    btcprice: {
+    priceXETHXXBT: {
       type: Number     
     },   
   },
   { timestamps: true }
 );
 
-module.exports = PriceInfo = mongoose.model("priceinfos", PriceInfoSchema);
+module.exports = PriceInfo = mongoose.model("priceXETHXXBT", PriceInfoSchema);

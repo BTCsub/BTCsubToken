@@ -1,6 +1,11 @@
 Compiling your contracts...
 ===========================
-> Everything is up to date, there is nothing to compile.
+> Compiling ./contracts/Migrations.sol
+> Compiling ./contracts/PriceTicker.sol
+> Compiling ./contracts/provableAPI_0.5.sol
+> Artifacts written to /home/sumit/Documents/sumit/BTCsubToken/build/contracts
+> Compiled successfully using:
+   - solc: 0.5.0+commit.1d4f565a.Emscripten.clang
 
 
 
@@ -8,49 +13,49 @@ Migrations dry-run (simulation)
 ===============================
 > Network name:    'rinkeby-fork'
 > Network id:      4
-> Block gas limit: 10000000 (0x989680)
+> Block gas limit: 0x989680
 
 
 1_initial_migration.js
 ======================
 
-   Deploying 'Migrations'
+   Replacing 'Migrations'
    ----------------------
-   > block number:        6912442
-   > block timestamp:     1595842213
+   > block number:        6994705
+   > block timestamp:     1597076254
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.977757039
-   > gas used:            160095 (0x2715f)
+   > balance:             2.933006529
+   > gas used:            185703
    > gas price:           10 gwei
    > value sent:          0 ETH
-   > total cost:          0.00160095 ETH
+   > total cost:          0.00185703 ETH
 
    -------------------------------------
-   > Total cost:          0.00160095 ETH
+   > Total cost:          0.00185703 ETH
 
 
 2_migration.js
 ==============
 
-   Deploying 'DataOracle'
-   ----------------------
-   > block number:        6912444
-   > block timestamp:     1595842450
+   Deploying 'PriceTicker'
+   -----------------------
+   > block number:        6994707
+   > block timestamp:     1597076266
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.942337079
-   > gas used:            3514644 (0x35a114)
+   > balance:             2.900088509
+   > gas used:            3264790
    > gas price:           10 gwei
    > value sent:          0 ETH
-   > total cost:          0.03514644 ETH
+   > total cost:          0.0326479 ETH
 
    -------------------------------------
-   > Total cost:          0.03514644 ETH
+   > Total cost:           0.0326479 ETH
 
 
 Summary
 =======
 > Total deployments:   2
-> Final cost:          0.03674739 ETH
+> Final cost:          0.03450493 ETH
 
 
 
@@ -60,22 +65,22 @@ Starting migrations...
 ======================
 > Network name:    'rinkeby'
 > Network id:      4
-> Block gas limit: 10000000 (0x989680)
+> Block gas limit: 0x989680
 
 
 1_initial_migration.js
 ======================
 
-   Deploying 'Migrations'
+   Replacing 'Migrations'
    ----------------------
-   > transaction hash:    0xc2244c9b6d0b4e0457c104da08570ba54282f48accb2d91c55d3be1ada403156
-   > Blocks: 1            Seconds: 22
-   > contract address:    0x5Bb0620Ad7c0dE407CBD0DA4230e983efCa45578
-   > block number:        6912467
-   > block timestamp:     1595842588
+   > transaction hash:    0xf37c312ca8f7ddd12ecb42c4bc63d374be4bef693c8e1ad812cabbb241419e01
+   > Blocks: 0            Seconds: 6
+   > contract address:    0x8405a5eC531e0EA128154EDB1f6636B4c5dF4D47
+   > block number:        6994707
+   > block timestamp:     1597076283
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.977607039
-   > gas used:            175095 (0x2abf7)
+   > balance:             2.933112609
+   > gas used:            175095
    > gas price:           10 gwei
    > value sent:          0 ETH
    > total cost:          0.00175095 ETH
@@ -90,28 +95,28 @@ Starting migrations...
 2_migration.js
 ==============
 
-   Deploying 'DataOracle'
-   ----------------------
-   > transaction hash:    0xd54289a0e7407e27a6a4967c11b663236cb8b4120e7bda3bc073dd48daccc621
-   > Blocks: 1            Seconds: 9
-   > contract address:    0xe8608C3D5F48eCc69d99Dcc958085Ef3FE3FAFc9
-   > block number:        6912469
-   > block timestamp:     1595842618
+   Deploying 'PriceTicker'
+   -----------------------
+   > transaction hash:    0xd4f84600667351e861cb9aab9242027e86218faf527d5d0f488b328a883cc211
+   > Blocks: 1            Seconds: 11
+   > contract address:    0x3257E36c60D8526419436031f69E377Ef3fBAda4
+   > block number:        6994709
+   > block timestamp:     1597076313
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.935137079
-   > gas used:            4204644 (0x402864)
+   > balance:             2.905721149
+   > gas used:            2696794
    > gas price:           10 gwei
    > value sent:          0 ETH
-   > total cost:          0.04204644 ETH
+   > total cost:          0.02696794 ETH
 
 
    > Saving migration to chain.
    > Saving artifacts
    -------------------------------------
-   > Total cost:          0.04204644 ETH
+   > Total cost:          0.02696794 ETH
 
 
 Summary
 =======
 > Total deployments:   2
-> Final cost:          0.04379739 ETH
+> Final cost:          0.02871889 ETH
