@@ -10,7 +10,7 @@ import "./lib/token/ERC20/ERC20Detailed.sol";
 * @notice ERC20 token
 * @dev Optional approveAndCall() functionality to notify a contract if an approve() has occurred.
 */
-contract subToken is ERC20, ERC20Detailed('subtoken', 'SUB', 18) {
+contract subToken is ERC20, ERC20Detailed('subtoken', 'SBX', 18) {
 
     /**
     * @notice Set amount of tokens
