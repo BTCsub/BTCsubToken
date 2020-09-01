@@ -1,11 +1,6 @@
 Compiling your contracts...
 ===========================
-> Compiling ./contracts/Migrations.sol
-> Compiling ./contracts/PriceTicker.sol
-> Compiling ./contracts/provableAPI_0.5.sol
-> Artifacts written to /home/sumit/Documents/sumit/BTCsubToken/build/contracts
-> Compiled successfully using:
-   - solc: 0.5.0+commit.1d4f565a.Emscripten.clang
+> Everything is up to date, there is nothing to compile.
 
 
 
@@ -21,10 +16,10 @@ Migrations dry-run (simulation)
 
    Replacing 'Migrations'
    ----------------------
-   > block number:        6994705
-   > block timestamp:     1597076254
+   > block number:        7121960
+   > block timestamp:     1598985254
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.933006529
+   > balance:             5.261505219
    > gas used:            185703
    > gas price:           10 gwei
    > value sent:          0 ETH
@@ -37,25 +32,25 @@ Migrations dry-run (simulation)
 2_migration.js
 ==============
 
-   Deploying 'PriceTicker'
+   Replacing 'PriceTicker'
    -----------------------
-   > block number:        6994707
-   > block timestamp:     1597076266
+   > block number:        7121962
+   > block timestamp:     1598985264
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.900088509
-   > gas used:            3264790
+   > balance:             5.218059369
+   > gas used:            4317573
    > gas price:           10 gwei
    > value sent:          0 ETH
-   > total cost:          0.0326479 ETH
+   > total cost:          0.04317573 ETH
 
    -------------------------------------
-   > Total cost:           0.0326479 ETH
+   > Total cost:          0.04317573 ETH
 
 
 Summary
 =======
 > Total deployments:   2
-> Final cost:          0.03450493 ETH
+> Final cost:          0.04503276 ETH
 
 
 
@@ -73,13 +68,13 @@ Starting migrations...
 
    Replacing 'Migrations'
    ----------------------
-   > transaction hash:    0xf37c312ca8f7ddd12ecb42c4bc63d374be4bef693c8e1ad812cabbb241419e01
-   > Blocks: 0            Seconds: 6
-   > contract address:    0x8405a5eC531e0EA128154EDB1f6636B4c5dF4D47
-   > block number:        6994707
-   > block timestamp:     1597076283
+   > transaction hash:    0x3c631026add9356d7a0141fb3819a9fbcde581e6b92b2af904bf3a23fe3cb7f8
+   > Blocks: 0            Seconds: 13
+   > contract address:    0x4CEc64B8CA0a8739A3A6404103d34Fa6637dB7b1
+   > block number:        7121961
+   > block timestamp:     1598985285
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.933112609
+   > balance:             5.261611299
    > gas used:            175095
    > gas price:           10 gwei
    > value sent:          0 ETH
@@ -95,28 +90,28 @@ Starting migrations...
 2_migration.js
 ==============
 
-   Deploying 'PriceTicker'
+   Replacing 'PriceTicker'
    -----------------------
-   > transaction hash:    0xd4f84600667351e861cb9aab9242027e86218faf527d5d0f488b328a883cc211
-   > Blocks: 1            Seconds: 11
-   > contract address:    0x3257E36c60D8526419436031f69E377Ef3fBAda4
-   > block number:        6994709
-   > block timestamp:     1597076313
+   > transaction hash:    0x7ac63652556236a5f20096c5baa88dedee56e796554fa20816bbc708b17036d3
+   > Blocks: 0            Seconds: 9
+   > contract address:    0x49e9F6AAEF9B31B430D05798e5f7E7be02ddB739
+   > block number:        7121963
+   > block timestamp:     1598985315
    > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
-   > balance:             2.905721149
-   > gas used:            2696794
+   > balance:             5.225683609
+   > gas used:            3550417
    > gas price:           10 gwei
    > value sent:          0 ETH
-   > total cost:          0.02696794 ETH
+   > total cost:          0.03550417 ETH
 
 
    > Saving migration to chain.
    > Saving artifacts
    -------------------------------------
-   > Total cost:          0.02696794 ETH
+   > Total cost:          0.03550417 ETH
 
 
 Summary
 =======
 > Total deployments:   2
-> Final cost:          0.02871889 ETH
+> Final cost:          0.03725512 ETH

@@ -2,156 +2,231 @@ pragma solidity >= 0.5.0 < 0.6.0;
 
 import "./provableAPI_0.5.sol";
 
-contract PriceTicker is usingProvable {
-
-    string public priceXETHXXBT;
-    string public priceADAETH;
-    string public priceETHUSDT;
-    string public priceBCHUSD;
-    string public priceXTZUSD;
-    string public priceCOMPUSD;
-    string public priceLTCUSDT;
-    string public priceADAUSD;
+contract PriceTicker is usingProvable  {
 
 
-   enum oraclizeState { ForXETHXXBT, ForADAETH , ForETHUSDT, ForBCHUSD, ForXTZUSD, ForCOMPUSD, ForLTCUSDT, ForADAUSD }
-  
+    string public wBTC;
+    string public TUSD;
+    string public ETH;
+    string public sBCH;
+    string public sXTZ;
+    string public COMP;
+    string public sLTC;
+    string public sADA;
+    string public BUSD;
+    string public USDC;
+    string public DAI;
+    
+    
+      // oraclize callback types:
+      enum oraclizeState { ForwBTC, ForTUSD , ForETH, ForBCH, ForXTZ, ForCOMP, ForLTC, ForADA, ForBUSD, ForUSDC, ForDAI }
+
+   
+  //Events
+      event LOG_wBTC(
+                string result
+      );
       
-    struct oraclizeCallback {
+      event LOG_USDC(
+                string result
+      );
+
+      event LOG_TUSD(
+                string result
+      );
+      
+       event LOG_ETHUSD(
+                string result
+      );
+
+      event LOG_BCHUSD(
+                string result
+      );
+      
+       event LOG_XTZUSD(
+                string result
+      );
+
+      event LOG_COMPUSD(
+                string result
+      );
+      
+       event LOG_LTCUSDT(
+                string result
+      );
+
+      event LOG_ADAUSD(
+                string result
+      );
+      
+      event LOG_BUSD(
+                string result
+      );
+      
+      event LOG_DAI(
+                string result
+      );
+      
+
+       // the oraclize callback structure: we use several oraclize calls.
+       // all oraclize calls will result in a common callback to __callback(...).
+       // to keep track of the different querys we have to introduce this struct.
+       
+       
+       
+      struct oraclizeCallback {
+            // for which purpose did we call? {ForUSD | ForDistance}
             oraclizeState oState;
-    }
-
-    mapping (bytes32 => oraclizeCallback) public oraclizeCallbacks;
- 
- 
-   constructor() public payable {
-    }
-
-    function __callback( bytes32 myid, string memory result )  public {
-        
-    require(msg.sender == provable_cbAddress());
-    
-                oraclizeCallback memory o = oraclizeCallbacks[myid];
+      }
+      // Lookup state from queryIds
+      mapping (bytes32 => oraclizeCallback) public oraclizeCallbacks;
+      address public owner;
       
-                 if (o.oState == oraclizeState.ForXETHXXBT ) {
-                      
-                  priceXETHXXBT = result;
-                  
-                       }
-                  else if(o.oState == oraclizeState.ForADAETH) {
-                   priceADAETH = result;
-                  
-                 }
-                   else if(o.oState == oraclizeState.ForETHUSDT) {
-                   priceETHUSDT = result;
-                   
-                 }
-                   else if(o.oState == oraclizeState.ForBCHUSD) {
-                   priceBCHUSD = result;
-                   
-                 }
-                   else if(o.oState == oraclizeState.ForXTZUSD) {
-                   priceXTZUSD = result;
-                   
-                 }
-                   else if(o.oState == oraclizeState.ForCOMPUSD) {
-                   priceCOMPUSD = result;
-                  
-                 }
-                   else if(o.oState == oraclizeState.ForLTCUSDT) {
-                   priceLTCUSDT = result;
-                  
-                 }
-                   else if(o.oState == oraclizeState.ForADAUSD) {
-                   priceADAUSD = result;
-                  
-                 }
+          modifier onlyOwner {
+        require(owner == msg.sender);
+        _;
     }
-    
 
-   function XETHXXBTPrice()
-        public
-        payable
-    {
-        if (provable_getPrice("URL") > address(this).balance) {
-           
-        } else {
-            
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=ETHXBT).result.XETHXXBT.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForXETHXXBT);
-        }
+    function changeOraclizeGasPrice(uint _newGasPrice) external onlyOwner {
+        provable_setCustomGasPrice(_newGasPrice);
     }
-        
-          function ADAETHPrice() public payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-           
-        } else {
-          
-          bytes32 queryId =  provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=ADAETH).result.ADAETH.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForADAETH);
-        }
-          }
-        
-        
-          function ETHUSDTPrice() public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-          
-        } else {
-            
-            bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=ETHUSDT).result.ETHUSDT.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForETHUSDT);
-        }
-          }
-        
-        
-        function BCHUSDPrice()   public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-            
-        } else {
-            
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=BCHUSD).result.BCHUSD.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBCHUSD);
-        }
-        }
-        
-        
-       function XTZUSDPrice()   public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-          
-        } else {
-            
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=XTZUSD).result.XTZUSD.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForXTZUSD);
-        }}
-        
-          function COMPUSDPrice()   public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-           
-        } else {
-            
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=COMPUSD).result.COMPUSD.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForCOMPUSD);
-        }}
-        
-        
-          function LTCUSDTPrice()   public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-           
-        } else {
-           
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=LTCUSDT).result.LTCUSDT.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForLTCUSDT);
-        }}
-        
-             function ADAUSDPrice()   public  payable  {
-        if (provable_getPrice("URL") > address(this).balance) {
-           
-        } else {
-           
-           bytes32 queryId = provable_query(60, "URL", "json(https://api.kraken.com/0/public/Ticker?pair=ADAUSD).result.ADAUSD.c.0");
-            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForADAUSD);
-        }}
-        
+
     
+      // constructor
+      constructor() public {
+              owner = msg.sender;
+             
+      }
+      //Function for distance retrieval
+      function wBTCPrice() public payable returns(bool sufficient) {
+           
+            bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x2260fac5e5542a773aa44fbcfedf7c193bc2c599&vs_currencies=USD");
+            oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForwBTC);
+            return true;
+      }
+
+      function TUSDPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x0000000000085d4780b73119b644ae5ecd22b376&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForTUSD);
+         return true;
+      }
+      
+      function USDCPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForUSDC);
+         return true;
+      }
+      
+      function BUSDPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x4fabb145d64652a948d72533023f6e7a623c7c53&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBUSD);
+         return true;
+      }
+      
+       function ETHPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForETH);
+         return true;
+      }
+      
+      
+       function sBCHPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x36a2422a863d5b950882190ff5433e513413343a&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForBCH);
+         return true;
+      }
+      
+       function sXTZPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0xf45b14ddabf0f0e275e215b94dd24ae013a27f12&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForXTZ);
+         return true;
+      }
+      
+       function COMPPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0xc00e94cb662c3520282e6f5717214004a7f26888&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForCOMP);
+         return true;
+      }
+      
+       function sLTCPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0xc14103c2141e842e228fbac594579e798616ce7a&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForLTC);
+         return true;
+      }
+      
+        function sADAPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0xe36e2d3c7c34281fa3bc737950a68571736880a1&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForADA);
+         return true;
+      }
+      
+      function DAIPrice() public payable returns(bool sufficient) {
+          
+         bytes32 queryId =  provable_query("URL","https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=0x6b175474e89094c44da98b954eedeac495271d0f&vs_currencies=USD");
+         oraclizeCallbacks[queryId] = oraclizeCallback(oraclizeState.ForDAI);
+         return true;
+      }
+
+
+      //Function callback
+      function __callback(bytes32 myid, string memory result) public {
+
+                 if (msg.sender != provable_cbAddress()) revert();
+                 oraclizeCallback memory o = oraclizeCallbacks[myid];
+                 
+                 
+                 if (o.oState == oraclizeState.ForwBTC) {
+                     wBTC = result;
+                     emit LOG_wBTC(result); 
+                  }
+                  else if(o.oState == oraclizeState.ForTUSD) {
+                   TUSD = result;
+                   emit LOG_TUSD(result);
+                 }
+                 else if(o.oState == oraclizeState.ForUSDC) {
+                   USDC = result;
+                   emit LOG_USDC(result);
+                 }
+                   else if(o.oState == oraclizeState.ForETH) {
+                   ETH = result;
+                   emit LOG_ETHUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForBCH) {
+                   sBCH = result;
+                   emit LOG_BCHUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForXTZ) {
+                   sXTZ = result;
+                   emit LOG_XTZUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForCOMP) {
+                   COMP = result;
+                   emit LOG_COMPUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForLTC) {
+                   sLTC = result;
+                   emit LOG_LTCUSDT(result);
+                 }
+                   else if(o.oState == oraclizeState.ForBUSD) {
+                   BUSD = result;
+                   emit LOG_BUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForADA) {
+                   sADA = result;
+                   emit LOG_ADAUSD(result);
+                 }
+                   else if(o.oState == oraclizeState.ForADA) {
+                   sADA = result;
+                   emit LOG_DAI(result);
+                 }
+      }
 }
-

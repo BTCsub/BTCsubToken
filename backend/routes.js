@@ -1,5 +1,5 @@
 const express = require('express');
-var contract = require("@truffle/contract");
+// var contract = require("@truffle/contract");
 const router = new express.Router();
 var CryptoJS = require("crypto-js");
 const bodyParser = require("body-parser");
@@ -23,13 +23,11 @@ const ADAUSDPriceInfo = require("../backend/model/price8");
 
 
 
-
-
-
 var privateKey = new Buffer(Key.privateKey, 'hex')
 
 
 var Web3 = require("web3");
+const { yellow } = require('color-name');
 // //set url of node as provider
 var web3;
 if (typeof web3 !== "undefined") {
@@ -44,9 +42,11 @@ web3.eth.getBlockNumber().then(console.log);
 web3.eth.net.getNetworkType()
   .then(console.log);
 
-
+var timeIntervalTUSDPriceCallOracle;
+var timeIntervalforCallOracle;
+var timeIntervalUSDCPriceCallOracle;
   //------------------------------------------------------XETHXXBTPrice ----------------------------------------------//
-  router.post("/XETHXXBTPrice", (req, res) => {
+   function wBTCPrice(){   
     web3.eth.defaultAccount = Key.fromAddress;
   
     web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
@@ -54,7 +54,7 @@ web3.eth.net.getNetworkType()
         Key.interface,
         Key.contractAddress
       );
-      let encodedABI = contractInstance.methods.XETHXXBTPrice().encodeABI();
+      let encodedABI = contractInstance.methods.wBTCPrice().encodeABI();
   
       let rawTx = {
         nonce: web3.utils.toHex(txCount),
@@ -64,7 +64,7 @@ web3.eth.net.getNetworkType()
         gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
         chainId: '0x04',
         data: encodedABI,
-        value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+        value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
       };
   
       var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
@@ -73,17 +73,21 @@ web3.eth.net.getNetworkType()
   
       web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         if (err) {
-          res.status(500).json({ Body: err })
+          console.log(err)
         } else {
-          res.status(200).json({ Body: hash })
-        }
-
-       
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to wBTCPrice-Price Initiated")
+          time = setInterval(fetchBTCPrice,30000)
+        }       
       });
     })
-  });
+   }
+   timeIntervalforCallOracle = setInterval(wBTCPrice,60000)
 
-  router.get("/priceXETHXXBT", (req, res) => {
+  
+  
+  
+   async function fetchBTCPrice(){
     web3.eth.defaultAccount = Key.fromAddress;
     var contractInstance = new web3.eth.Contract(
       Key.interface, Key.contractAddress, {
@@ -92,27 +96,43 @@ web3.eth.net.getNetworkType()
     }
     );
     try {
-      contractInstance.methods.priceXETHXXBT().call().then(async result => { 
-        var price = new priceXETHXXBTPriceInfo({ priceXETHXXBT : result})
-        const data = await price.save();         
-        var v1 = await priceXETHXXBTPriceInfo.find()
-        .limit(2)
-        .sort({ "_id": -1 })  
+      contractInstance.methods.wBTC().call().then(async result => {      
+        var x = JSON.parse(result)  
+        const y = x["0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"].usd;
+        var price = new XETHXXBTPriceInfo({ priceXETHXXBT : y}) ;        
+     
           
+        const data = await price.save();         
+        var v1 = await XETHXXBTPriceInfo.find()
+        .limit(2)
+        .sort({ "_id": -1 })        
+      
 
-          const resultToInt = parseFloat(result);
-          var variance = (resultToInt - v1[1].priceXETHXXBT)/v1[1].priceXETHXXBT*100.00;        
-         res.status(200).json({ CurrentXETHXXBTPrice: resultToInt, Variance :variance  }) 
+          
+          var variance = (y - v1[1].priceXETHXXBT)/v1[1].priceXETHXXBT*100.00; 
+          console.log("Current wBTCrice ====>" ,y, "Variance ====>" ,variance)   
+          if (variance < -3 || variance > 0.0000003) {
+            console.log("Perform swap needed")
+          
+          } else if (variance === 0){
+            console.log("No Perform Swap")
+            
+          } else {
+            console.log("No swap needed")
+          }
+        
       })
     } catch (e) {
-      res.status(500).json({ Body: e })
+      console.log(e)
     }
-  });
-  
+  }
+  fetchBTCPrice()
 
-//------------------------------------------------------XETHXXBTPrice ----------------------------------------------//
 
-router.post("/ADAETHPrice", (req, res) => {
+
+//------------------------------------------------------TUSDPrice ----------------------------------------------//
+
+function TUSDPrice(){   
   web3.eth.defaultAccount = Key.fromAddress;
 
   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
@@ -120,7 +140,7 @@ router.post("/ADAETHPrice", (req, res) => {
       Key.interface,
       Key.contractAddress
     );
-    let encodedABI = contractInstance.methods.ADAETHPrice().encodeABI();
+    let encodedABI = contractInstance.methods.TUSDPrice().encodeABI();
 
     let rawTx = {
       nonce: web3.utils.toHex(txCount),
@@ -130,7 +150,7 @@ router.post("/ADAETHPrice", (req, res) => {
       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
       chainId: '0x04',
       data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
     };
 
     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
@@ -139,17 +159,20 @@ router.post("/ADAETHPrice", (req, res) => {
 
     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
       if (err) {
-        res.status(500).json({ Body: err })
+        console.log(err)
       } else {
-        res.status(200).json({ Body: hash })
-      }
-
-     
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to TUSDPrice Initiated")
+          time = setInterval(fetchTUSD,30000)
+      }     
     });
   })
-});
+}
 
-router.get("/priceADAETH", (req, res) => {
+timeIntervalTUSDPriceCallOracle = setInterval(TUSDPrice,60000)
+
+
+async function fetchTUSD(){
   web3.eth.defaultAccount = Key.fromAddress;
   var contractInstance = new web3.eth.Contract(
     Key.interface, Key.contractAddress, {
@@ -158,28 +181,38 @@ router.get("/priceADAETH", (req, res) => {
   }
   );
   try {
-    contractInstance.methods.priceADAETH().call().then(async result => { 
-      // res.status(200).json({ Body : result})
-      var price = new ADAETHPriceInfo({ priceADAETH : result})
+    contractInstance.methods.TUSD().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0x0000000000085d4780b73119b644ae5ecd22b376"].usd;
+      var price = new ADAETHPriceInfo({ priceADAETH : y})
       const data = await price.save();         
       var v1 = await ADAETHPriceInfo.find()
       .limit(2)
       .sort({ "_id": -1 })  
+      
+        var variance = (y - v1[1].priceADAETH)/v1[1].priceADAETH*100.00;     
+        console.log("Current  TUSD Price ====>" ,y, "Variance ====>" ,variance)      
+        if (variance < -3 || variance > 0.0000003) {
+          console.log("Perform swap needed")
         
-
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceADAETH)/v1[1].priceADAETH*100.00;        
-       res.status(200).json({ CurrentADAETHPrice: resultToInt, Variance :variance  }) 
+        } else if (variance === 0){
+          console.log("No Perform Swap")
+          
+        } else {
+          console.log("No swap needed")
+        }
+       
     })
   } catch (e) {
-    res.status(500).json({ Body: e })
+    console.log(e)
   }
-});
+}
+fetchTUSD()
 
 
 
 
-router.post("/ETHUSDTPrice", (req, res) => {
+function USDCPrice(){ 
   web3.eth.defaultAccount = Key.fromAddress;
 
   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
@@ -187,7 +220,7 @@ router.post("/ETHUSDTPrice", (req, res) => {
       Key.interface,
       Key.contractAddress
     );
-    let encodedABI = contractInstance.methods.ETHUSDTPrice().encodeABI();
+    let encodedABI = contractInstance.methods.USDCPrice().encodeABI();
 
     let rawTx = {
       nonce: web3.utils.toHex(txCount),
@@ -197,7 +230,7 @@ router.post("/ETHUSDTPrice", (req, res) => {
       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
       chainId: '0x04',
       data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
     };
 
     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
@@ -206,17 +239,20 @@ router.post("/ETHUSDTPrice", (req, res) => {
 
     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
       if (err) {
-        res.status(500).json({ Body: err })
+        console.log(err)
       } else {
-        res.status(200).json({ Body: hash })
-      }
-
-     
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to USDC Price Initiated")
+          time = setInterval(fetchUSDCPrice,30000)
+      }    
     });
   })
-});
+}
+timeIntervalUSDCPriceCallOracle = setInterval(USDCPrice,60000)
 
-router.get("/priceETHUSDT", (req, res) => {
+
+
+async function fetchUSDCPrice(){
   web3.eth.defaultAccount = Key.fromAddress;
   var contractInstance = new web3.eth.Contract(
     Key.interface, Key.contractAddress, {
@@ -225,356 +261,365 @@ router.get("/priceETHUSDT", (req, res) => {
   }
   );
   try {
-    contractInstance.methods.priceETHUSDT().call().then(async result => { 
-      var price = new ETHUSDTPriceInfo({ priceETHUSDT : result})
+    contractInstance.methods.USDC().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"].usd;
+      var price = new ETHUSDTPriceInfo({ priceETHUSDT : y})
       const data = await price.save();         
       var v1 = await ETHUSDTPriceInfo.find()
       .limit(2)
-      .sort({ "_id": -1 })  
-        
+      .sort({ "_id": -1 })        
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceETHUSDT)/v1[1].priceETHUSDT*100.00;        
-       res.status(200).json({ CurrentETHUSDTprice: resultToInt, Variance :variance  }) 
+       var variance = (y - v1[1].priceETHUSDT)/v1[1].priceETHUSDT*100.00;        
+       console.log("Current  USDC Price ====>" ,y, " Variance ====>" ,variance)   
+
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+      
+      } else if (variance === 0){
+        console.log("No Perform Swap")
+        
+      } else {
+        console.log("No swap needed")
+      }
     })
   } catch (e) {
-    res.status(500).json({ Body: e })
+    console.log(e)
   }
-});
+}
+
+fetchUSDCPrice()
 
 
+// router.post("/BCHUSDPrice", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
 
+//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+//     var contractInstance = new web3.eth.Contract(
+//       Key.interface,
+//       Key.contractAddress
+//     );
+//     let encodedABI = contractInstance.methods.BCHUSDPrice().encodeABI();
 
+//     let rawTx = {
+//       nonce: web3.utils.toHex(txCount),
+//       from: web3.eth.defaultAccount,
+//       to: Key.contractAddress,
+//       gasLimit: '0x3d0900',
+//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+//       chainId: '0x04',
+//       data: encodedABI,
+//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+//     };
 
-router.post("/BCHUSDPrice", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
+//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+//     tx.sign(privateKey);
+//     var serializedTx = tx.serialize();
 
-  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-    var contractInstance = new web3.eth.Contract(
-      Key.interface,
-      Key.contractAddress
-    );
-    let encodedABI = contractInstance.methods.BCHUSDPrice().encodeABI();
-
-    let rawTx = {
-      nonce: web3.utils.toHex(txCount),
-      from: web3.eth.defaultAccount,
-      to: Key.contractAddress,
-      gasLimit: '0x3d0900',
-      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-      chainId: '0x04',
-      data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-    };
-
-    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-    tx.sign(privateKey);
-    var serializedTx = tx.serialize();
-
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-      if (err) {
-        res.status(500).json({ Body: err })
-      } else {
-        res.status(200).json({ Body: hash })
-      }
+//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+//       if (err) {
+//         res.status(500).json({ Body: err })
+//       } else {
+//         res.status(200).json({ Body: hash })
+//       }
 
      
-    });
-  })
-});
+//     });
+//   })
+// });
 
-router.get("/priceBCHUSD", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
-  var contractInstance = new web3.eth.Contract(
-    Key.interface, Key.contractAddress, {
-    from: web3.eth.defaultAccount,
-    gasPrice: "0"
-  }
-  );
-  try {
-    contractInstance.methods.priceBCHUSD().call().then(async result => { 
-      var price = new BCHUSDPriceInfo({ priceXETHXXBT : result})
-      const data = await price.save();         
-      var v1 = await BCHUSDPriceInfo.find()
-      .limit(2)
-      .sort({ "_id": -1 })  
+// router.get("/priceBCHUSD", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
+//   var contractInstance = new web3.eth.Contract(
+//     Key.interface, Key.contractAddress, {
+//     from: web3.eth.defaultAccount,
+//     gasPrice: "0"
+//   }
+//   );
+//   try {
+//     contractInstance.methods.priceBCHUSD().call().then(async result => { 
+//       var price = new BCHUSDPriceInfo({ priceXETHXXBT : result})
+//       const data = await price.save();         
+//       var v1 = await BCHUSDPriceInfo.find()
+//       .limit(2)
+//       .sort({ "_id": -1 })  
         
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceBCHUSD)/v1[1].priceBCHUSD*100.00;        
-       res.status(200).json({ CurrentBCHUSDPrice: resultToInt, Variance :variance  }) 
-    })
-  } catch (e) {
-    res.status(500).json({ Body: e })
-  }
-});
+//         const resultToInt = parseFloat(result);
+//         var variance = (resultToInt - v1[1].priceBCHUSD)/v1[1].priceBCHUSD*100.00;        
+//        res.status(200).json({ CurrentBCHUSDPrice: resultToInt, Variance :variance  }) 
+//     })
+//   } catch (e) {
+//     res.status(500).json({ Body: e })
+//   }
+// });
 
 
 
 
 
 
-router.post("/XTZUSDPrice", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
+// router.post("/XTZUSDPrice", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
 
-  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-    var contractInstance = new web3.eth.Contract(
-      Key.interface,
-      Key.contractAddress
-    );
-    let encodedABI = contractInstance.methods.XTZUSDPrice().encodeABI();
+//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+//     var contractInstance = new web3.eth.Contract(
+//       Key.interface,
+//       Key.contractAddress
+//     );
+//     let encodedABI = contractInstance.methods.XTZUSDPrice().encodeABI();
 
-    let rawTx = {
-      nonce: web3.utils.toHex(txCount),
-      from: web3.eth.defaultAccount,
-      to: Key.contractAddress,
-      gasLimit: '0x3d0900',
-      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-      chainId: '0x04',
-      data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-    };
+//     let rawTx = {
+//       nonce: web3.utils.toHex(txCount),
+//       from: web3.eth.defaultAccount,
+//       to: Key.contractAddress,
+//       gasLimit: '0x3d0900',
+//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+//       chainId: '0x04',
+//       data: encodedABI,
+//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+//     };
 
-    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-    tx.sign(privateKey);
-    var serializedTx = tx.serialize();
+//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+//     tx.sign(privateKey);
+//     var serializedTx = tx.serialize();
 
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-      if (err) {
-        res.status(500).json({ Body: err })
-      } else {
-        res.status(200).json({ Body: hash })
-      }
+//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+//       if (err) {
+//         res.status(500).json({ Body: err })
+//       } else {
+//         res.status(200).json({ Body: hash })
+//       }
 
      
-    });
-  })
-});
+//     });
+//   })
+// });
 
-router.get("/priceXTZUSD", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
-  var contractInstance = new web3.eth.Contract(
-    Key.interface, Key.contractAddress, {
-    from: web3.eth.defaultAccount,
-    gasPrice: "0"
-  }
-  );
-  try {
-    contractInstance.methods.priceXTZUSD().call().then(async result => { 
-      var price = new XTZUSDPriceInfo({ priceXTZUSD : result})
-      const data = await price.save();         
-      var v1 = await XTZUSDPriceInfo.find()
-      .limit(2)
-      .sort({ "_id": -1 })  
+// router.get("/priceXTZUSD", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
+//   var contractInstance = new web3.eth.Contract(
+//     Key.interface, Key.contractAddress, {
+//     from: web3.eth.defaultAccount,
+//     gasPrice: "0"
+//   }
+//   );
+//   try {
+//     contractInstance.methods.priceXTZUSD().call().then(async result => { 
+//       var price = new XTZUSDPriceInfo({ priceXTZUSD : result})
+//       const data = await price.save();         
+//       var v1 = await XTZUSDPriceInfo.find()
+//       .limit(2)
+//       .sort({ "_id": -1 })  
         
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceXTZUSD)/v1[1].priceXTZUSD*100.00;        
-       res.status(200).json({ CurrentXTZUSDPrice: resultToInt, Variance :variance  }) 
-    })
-  } catch (e) {
-    res.status(500).json({ Body: e })
-  }
-});
+//         const resultToInt = parseFloat(result);
+//         var variance = (resultToInt - v1[1].priceXTZUSD)/v1[1].priceXTZUSD*100.00;        
+//        res.status(200).json({ CurrentXTZUSDPrice: resultToInt, Variance :variance  }) 
+//     })
+//   } catch (e) {
+//     res.status(500).json({ Body: e })
+//   }
+// });
 
 
 
 
 
-router.post("/COMPUSDPrice", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
+// router.post("/COMPUSDPrice", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
 
-  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-    var contractInstance = new web3.eth.Contract(
-      Key.interface,
-      Key.contractAddress
-    );
-    let encodedABI = contractInstance.methods.COMPUSDPrice().encodeABI();
+//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+//     var contractInstance = new web3.eth.Contract(
+//       Key.interface,
+//       Key.contractAddress
+//     );
+//     let encodedABI = contractInstance.methods.COMPUSDPrice().encodeABI();
 
-    let rawTx = {
-      nonce: web3.utils.toHex(txCount),
-      from: web3.eth.defaultAccount,
-      to: Key.contractAddress,
-      gasLimit: '0x3d0900',
-      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-      chainId: '0x04',
-      data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-    };
+//     let rawTx = {
+//       nonce: web3.utils.toHex(txCount),
+//       from: web3.eth.defaultAccount,
+//       to: Key.contractAddress,
+//       gasLimit: '0x3d0900',
+//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+//       chainId: '0x04',
+//       data: encodedABI,
+//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+//     };
 
-    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-    tx.sign(privateKey);
-    var serializedTx = tx.serialize();
+//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+//     tx.sign(privateKey);
+//     var serializedTx = tx.serialize();
 
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-      if (err) {
-        res.status(500).json({ Body: err })
-      } else {
-        res.status(200).json({ Body: hash })
-      }
+//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+//       if (err) {
+//         res.status(500).json({ Body: err })
+//       } else {
+//         res.status(200).json({ Body: hash })
+//       }
 
      
-    });
-  })
-});
+//     });
+//   })
+// });
 
-router.get("/priceCOMPUSD", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
-  var contractInstance = new web3.eth.Contract(
-    Key.interface, Key.contractAddress, {
-    from: web3.eth.defaultAccount,
-    gasPrice: "0"
-  }
-  );
-  try {
-    contractInstance.methods.priceCOMPUSD().call().then(async result => { 
-      var price = new COMPUSDPriceInfo({ priceCOMPUSD : result})
-      const data = await price.save();         
-      var v1 = await COMPUSDPriceInfo.find()
-      .limit(2)
-      .sort({ "_id": -1 })  
+// router.get("/priceCOMPUSD", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
+//   var contractInstance = new web3.eth.Contract(
+//     Key.interface, Key.contractAddress, {
+//     from: web3.eth.defaultAccount,
+//     gasPrice: "0"
+//   }
+//   );
+//   try {
+//     contractInstance.methods.priceCOMPUSD().call().then(async result => { 
+//       var price = new COMPUSDPriceInfo({ priceCOMPUSD : result})
+//       const data = await price.save();         
+//       var v1 = await COMPUSDPriceInfo.find()
+//       .limit(2)
+//       .sort({ "_id": -1 })  
         
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceCOMPUSD)/v1[1].priceCOMPUSD*100.00;        
-       res.status(200).json({ CurrentCOMPUSDPrice: resultToInt, Variance :variance  }) 
-    })
-  } catch (e) {
-    res.status(500).json({ Body: e })
-  }
-});
+//         const resultToInt = parseFloat(result);
+//         var variance = (resultToInt - v1[1].priceCOMPUSD)/v1[1].priceCOMPUSD*100.00;        
+//        res.status(200).json({ CurrentCOMPUSDPrice: resultToInt, Variance :variance  }) 
+//     })
+//   } catch (e) {
+//     res.status(500).json({ Body: e })
+//   }
+// });
 
 
 
 
-router.post("/LTCUSDTPrice", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
+// router.post("/LTCUSDTPrice", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
 
-  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-    var contractInstance = new web3.eth.Contract(
-      Key.interface,
-      Key.contractAddress
-    );
-    let encodedABI = contractInstance.methods.LTCUSDTPrice().encodeABI();
+//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+//     var contractInstance = new web3.eth.Contract(
+//       Key.interface,
+//       Key.contractAddress
+//     );
+//     let encodedABI = contractInstance.methods.LTCUSDTPrice().encodeABI();
 
-    let rawTx = {
-      nonce: web3.utils.toHex(txCount),
-      from: web3.eth.defaultAccount,
-      to: Key.contractAddress,
-      gasLimit: '0x3d0900',
-      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-      chainId: '0x04',
-      data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-    };
+//     let rawTx = {
+//       nonce: web3.utils.toHex(txCount),
+//       from: web3.eth.defaultAccount,
+//       to: Key.contractAddress,
+//       gasLimit: '0x3d0900',
+//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+//       chainId: '0x04',
+//       data: encodedABI,
+//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+//     };
 
-    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-    tx.sign(privateKey);
-    var serializedTx = tx.serialize();
+//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+//     tx.sign(privateKey);
+//     var serializedTx = tx.serialize();
 
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-      if (err) {
-        res.status(500).json({ Body: err })
-      } else {
-        res.status(200).json({ Body: hash })
-      }
+//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+//       if (err) {
+//         res.status(500).json({ Body: err })
+//       } else {
+//         res.status(200).json({ Body: hash })
+//       }
 
      
-    });
-  })
-});
+//     });
+//   })
+// });
 
-router.get("/priceLTCUSDT", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
-  var contractInstance = new web3.eth.Contract(
-    Key.interface, Key.contractAddress, {
-    from: web3.eth.defaultAccount,
-    gasPrice: "0"
-  }
-  );
-  try {
-    contractInstance.methods.priceLTCUSDT().call().then(async result => { 
-      var price = new LTCUSDTPriceInfo({ priceLTCUSDT : result})
-      const data = await price.save();         
-      var v1 = await LTCUSDTPriceInfo.find()
-      .limit(2)
-      .sort({ "_id": -1 })  
+// router.get("/priceLTCUSDT", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
+//   var contractInstance = new web3.eth.Contract(
+//     Key.interface, Key.contractAddress, {
+//     from: web3.eth.defaultAccount,
+//     gasPrice: "0"
+//   }
+//   );
+//   try {
+//     contractInstance.methods.priceLTCUSDT().call().then(async result => { 
+//       var price = new LTCUSDTPriceInfo({ priceLTCUSDT : result})
+//       const data = await price.save();         
+//       var v1 = await LTCUSDTPriceInfo.find()
+//       .limit(2)
+//       .sort({ "_id": -1 })  
         
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceLTCUSDT)/v1[1].priceLTCUSDT*100.00;        
-        res.status(200).json({ CurrentLTCUSDTPrice: resultToInt, Variance :variance  }) 
-    })
-  } catch (e) {
-    res.status(500).json({ Body: e })
-  }
-});
+//         const resultToInt = parseFloat(result);
+//         var variance = (resultToInt - v1[1].priceLTCUSDT)/v1[1].priceLTCUSDT*100.00;        
+//         res.status(200).json({ CurrentLTCUSDTPrice: resultToInt, Variance :variance  }) 
+//     })
+//   } catch (e) {
+//     res.status(500).json({ Body: e })
+//   }
+// });
 
 
 
 
-router.post("/ADAUSDPrice", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
+// router.post("/ADAUSDPrice", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
 
-  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-    var contractInstance = new web3.eth.Contract(
-      Key.interface,
-      Key.contractAddress
-    );
-    let encodedABI = contractInstance.methods.ADAUSDPrice().encodeABI();
+//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+//     var contractInstance = new web3.eth.Contract(
+//       Key.interface,
+//       Key.contractAddress
+//     );
+//     let encodedABI = contractInstance.methods.ADAUSDPrice().encodeABI();
 
-    let rawTx = {
-      nonce: web3.utils.toHex(txCount),
-      from: web3.eth.defaultAccount,
-      to: Key.contractAddress,
-      gasLimit: '0x3d0900',
-      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-      chainId: '0x04',
-      data: encodedABI,
-      value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-    };
+//     let rawTx = {
+//       nonce: web3.utils.toHex(txCount),
+//       from: web3.eth.defaultAccount,
+//       to: Key.contractAddress,
+//       gasLimit: '0x3d0900',
+//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+//       chainId: '0x04',
+//       data: encodedABI,
+//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
+//     };
 
-    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-    tx.sign(privateKey);
-    var serializedTx = tx.serialize();
+//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+//     tx.sign(privateKey);
+//     var serializedTx = tx.serialize();
 
-    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-      if (err) {
-        res.status(500).json({ Body: err })
-      } else {
-        res.status(200).json({ Body: hash })
-      }
+//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+//       if (err) {
+//         res.status(500).json({ Body: err })
+//       } else {
+//         res.status(200).json({ Body: hash })
+//       }
 
      
-    });
-  })
-});
+//     });
+//   })
+// });
 
-router.get("/priceADAUSD", (req, res) => {
-  web3.eth.defaultAccount = Key.fromAddress;
-  var contractInstance = new web3.eth.Contract(
-    Key.interface, Key.contractAddress, {
-    from: web3.eth.defaultAccount,
-    gasPrice: "0"
-  }
-  );
-  try {
-    contractInstance.methods.priceADAUSD().call().then(async result => { 
-      var price = new ADAUSDPriceInfo({ priceADAUSD : result})
-      const data = await price.save();         
-      var v1 = await ADAUSDPriceInfo.find()
-      .limit(2)
-      .sort({ "_id": -1 })  
+// router.get("/priceADAUSD", (req, res) => {
+//   web3.eth.defaultAccount = Key.fromAddress;
+//   var contractInstance = new web3.eth.Contract(
+//     Key.interface, Key.contractAddress, {
+//     from: web3.eth.defaultAccount,
+//     gasPrice: "0"
+//   }
+//   );
+//   try {
+//     contractInstance.methods.priceADAUSD().call().then(async result => { 
+//       var price = new ADAUSDPriceInfo({ priceADAUSD : result})
+//       const data = await price.save();         
+//       var v1 = await ADAUSDPriceInfo.find()
+//       .limit(2)
+//       .sort({ "_id": -1 })  
         
 
-        const resultToInt = parseFloat(result);
-        var variance = (resultToInt - v1[1].priceADAUSD)/v1[1].priceADAUSD*100.00;        
-       res.status(200).json({ CurrentADAUSDPrice: resultToInt, Variance :variance  }) 
-    })
-  } catch (e) {
-    res.status(500).json({ Body: e })
-  }
-});
+//         const resultToInt = parseFloat(result);
+//         var variance = (resultToInt - v1[1].priceADAUSD)/v1[1].priceADAUSD*100.00;        
+//        res.status(200).json({ CurrentADAUSDPrice: resultToInt, Variance :variance  }) 
+//     })
+//   } catch (e) {
+//     res.status(500).json({ Body: e })
+//   }
+// });
 
 
 module.exports = router;
