@@ -4,10 +4,10 @@ const BigNumber = require('bignumber.js');
 const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
-const erc20ABI = require('./abis/erc20.json');
-const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"; //dai mainnet address
+const erc20ABI = require('./abis/wbtc.json');
+const daiAddress = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"; //dai mainnet address
 
-const fromAddress = "0xD3E52099a6a48F132Cb23b1364B7dEE212d862F6";
+const fromAddress = "0xd85a7a3c5f08e3e709c233e133ce1335fbbf5518";
 
 const fromToken = daiAddress;
 const fromTokenDecimals = 18;
@@ -15,7 +15,7 @@ const fromTokenDecimals = 18;
 const toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // ETH
 const toTokenDecimals = 18;
 
-const amountToExchange = new BigNumber(10);
+const amountToExchange = new BigNumber(1);
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545', { timeout: 20000000 }));
 
@@ -88,7 +88,7 @@ async function getQuote(fromToken, toToken, amount, callback) {
     }
     console.log("Trade From: " + fromToken)
     console.log("Trade To: " + toToken);
-    console.log("Trade Amount: " + amountToExchange + "DAI");
+    console.log("Trade Amount: " + amountToExchange + " token to be traded");
     
     console.log("FOR   " + new BigNumber(quote.returnAmount).shiftedBy(-fromTokenDecimals).toString() + " ETH ");
     console.log("--------------RETURN QUOTE----------------",quote.returnAmount)
@@ -108,16 +108,16 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
         // We get the balance before the swap just for logging purpose
         let ethBalanceBefore = await web3.eth.getBalance(fromAddress);
         let daiBalanceBefore = await daiToken.methods.balanceOf(fromAddress).call();
-        console.log("-----------ETH BALANCE BEFORE SWAP----------",ethBalanceBefore, "-----DAI BALANCE BEFORE SWAP--------------",daiBalanceBefore)
+        console.log("-----------ETH BALANCE BEFORE SWAP----------",ethBalanceBefore, "-----token BALANCE BEFORE SWAP--------------",daiBalanceBefore)
 
-        let slippage = new BigNumber(3/100 *quote.returnAmount).toFixed();
+        let slippage = new BigNumber(5/100 *quote.returnAmount).toFixed();
         
         let y = quote.returnAmount
         let x = slippage;
        
         let amntAfterSlippage = new BigNumber(y-x).toFixed();
 
-        console.log(".....................................",amntAfterSlippage );
+        console.log("-------slippage---------",amntAfterSlippage );
         onesplitContract.methods.swap(fromToken, toToken, amountWithDecimals, amntAfterSlippage , quote.distribution, 0).send({ from: fromAddress, gas: 8000000 }, async function(error, txHash) {
             if (error) {
                 console.log("Could not complete the swap", error);
@@ -129,7 +129,7 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
             let daiBalanceAfter = await daiToken.methods.balanceOf(fromAddress).call();
             console.log("Final balances:")
             console.log("Change in ETH balance", new BigNumber(ethBalanceAfter).minus(ethBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
-            console.log("Change in DAI balance", new BigNumber(daiBalanceAfter).minus(daiBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
+            console.log("Change in BUSD balance", new BigNumber(daiBalanceAfter).minus(daiBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
         });
     });
 });
