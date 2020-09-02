@@ -133,3 +133,5 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
         });
     });
 });
+
+module.exports = {getQuote, waitTransaction, approveToken }
