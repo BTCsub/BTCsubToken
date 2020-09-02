@@ -26,7 +26,7 @@ contract solcChecker {
 /* INCOMPATIBLE SOLC: import the following instead: "github.com/oraclize/ethereum-api/oraclizeAPI_0.4.sol" */ function f(bytes calldata x) external;
 }
 
-contract ProvableI {
+contract Provable {
 
     address public cbAddress;
 

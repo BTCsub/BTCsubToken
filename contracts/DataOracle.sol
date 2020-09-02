@@ -1,6 +1,6 @@
 pragma solidity >= 0.5.0 < 0.6.0;
 
-import "https://github.com/djuanit0x/provable-bitcoin-price/blob/master/contracts/provableAPI_0.5.sol";
+import "./lib/Oracle/provableAPI.sol";
 
 contract DataOracle is usingProvable  {
 
