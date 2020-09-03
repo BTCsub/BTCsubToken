@@ -4,10 +4,35 @@ const BigNumber = require('bignumber.js');
 const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
-const erc20ABI = require('./abis/wbtc.json');
-const daiAddress = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"; //dai mainnet address
 
-const fromAddress = "0xd85a7a3c5f08e3e709c233e133ce1335fbbf5518";
+const erc20ABI = require('./abis/wbtc.json');
+const busdABI = require('./abis/busd.json');
+const compABI = require('./abis/comp.json');
+const tusdABI = require('./abis/tusd.json');
+const wbtcABI = require('./abis/wbtc.json');
+
+const details = require('./tokenDetails')
+
+
+const daiAddress = details.dai_token_address;
+const fromAddress = details.dai_token_holder_address;
+
+
+const tusd_tokenAddress = details.tusd_token_address;
+const tusd_holderAddress = details.tusd_holder_address;
+
+const busd_tokenAddress = details.busd_token_address;
+const busd_holderAddress = details.busd_token_address
+
+
+const wbtc_tokenAddress = details.wbtc_token_address;
+const wbtc_holderAddress = details.wbtc_holder_address;
+
+
+const comp_tokenAddress = details.comp_token_address;
+const compt_holderAddress = details.comp_holder_address;
+
+
 
 const fromToken = daiAddress;
 const fromTokenDecimals = 18;
@@ -16,6 +41,25 @@ const toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // ETH
 const toTokenDecimals = 18;
 
 const amountToExchange = new BigNumber(1);
+
+
+
+switch (result ){
+    case (result = swapDAI):
+        return [approveToken(), getQuote()];
+        break;
+    case (result = swapTUSD):
+        return [approveToken(), getQuote()];
+        break;
+    case (result = swapBUSD):
+        return [approveToken(), getQuote()];
+        break;
+    case (result = swapWBTC):
+        return [approveToken, getQuote()];
+        break;
+    default:
+        console("nothing to do");
+}
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545', { timeout: 20000000 }));
 
