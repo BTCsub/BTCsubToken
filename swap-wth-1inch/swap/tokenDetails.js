@@ -19,4 +19,20 @@
 //erc20 
 //status :pending
 
+//comp token address= 0xc00e94cb662c3520282e6f5717214004a7f26888
+//comp holder address = 0x8F683CBa7a59df45a72462d2c18C797adb056802
+//erc20 
+//status :done
+
+//sxtz token address= 0x2e59005c5c0f0a4D77CcA82653d48b46322EE5Cd
+//sxtz holder address = 0x1F7d1970b0e9F229Df8D81f1F358f08EE52462Fd
+//erc20 
+//status :done
+
+//sltc token address= 0xC14103C2141E842e228FBaC594579e798616ce7A
+//sltc holder address = 0xC51447aD3B831DFC5603B92bFa46A06637250851
+//erc20 
+//status :done
+
+
 
