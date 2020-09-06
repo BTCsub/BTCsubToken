@@ -5,7 +5,7 @@ const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
 const erc20ABI = require('./abis/sltc.json');
-const daiAddress = "0xC14103C2141E842e228FBaC594579e798616ce7A"; //dai mainnet address
+const daiAddress = "0xC14103C2141E842e228FBaC594579e798616ce7A";
 
 const fromAddress = "0xC51447aD3B831DFC5603B92bFa46A06637250851";
 
@@ -88,7 +88,7 @@ async function getQuote(fromToken, toToken, amount, callback) {
     }
     console.log("Trade From: " + fromToken)
     console.log("Trade To: " + toToken);
-    console.log("Trade Amount: " + amountToExchange + " DAI ");
+    console.log("Trade Amount: " + amountToExchange + " sLTC ");
     
     console.log("FOR   " + new BigNumber(quote.returnAmount).shiftedBy(-fromTokenDecimals).toString() + " ETH ");
     console.log("======== RETURN QUOTE ========= ",quote.returnAmount)
@@ -108,7 +108,7 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
         // We get the balance before the swap just for logging purpose
         let ethBalanceBefore = await web3.eth.getBalance(fromAddress);
         let daiBalanceBefore = await daiToken.methods.balanceOf(fromAddress).call();
-        console.log(" ====== ETH BALANCE BEFORE SWAP =======",ethBalanceBefore, " ========= DAI BALANCE BEFORE SWAP ========= ",daiBalanceBefore)
+        console.log(" ====== ETH BALANCE BEFORE SWAP =======",ethBalanceBefore, " ========= sLTC BALANCE BEFORE SWAP ========= ",daiBalanceBefore)
 
         let slippage = new BigNumber(3/100 *quote.returnAmount).toFixed();
         
@@ -129,7 +129,7 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
             let daiBalanceAfter = await daiToken.methods.balanceOf(fromAddress).call();
             console.log("Final balances:")
             console.log("Change in ETH balance", new BigNumber(ethBalanceAfter).minus(ethBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
-            console.log("Change in DAI balance", new BigNumber(daiBalanceAfter).minus(daiBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
+            console.log("Change in sLTC balance", new BigNumber(daiBalanceAfter).minus(daiBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
         });
     });
 });

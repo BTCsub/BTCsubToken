@@ -8,6 +8,7 @@ var EC = require('elliptic').ec;
 var ec = new EC('secp256k1');
 var solc = require("solc");
 const EthereumTx = require("ethereumjs-tx");
+var child_process = require('child_process');
 const Key = require('./config')
 const simpleStorageInterface = require("../build/contracts/PriceTicker.json");
 
@@ -15,7 +16,7 @@ const simpleStorageInterface = require("../build/contracts/PriceTicker.json");
 const XETHXXBTPriceInfo = require("../backend/model/price");
 const ADAETHPriceInfo = require("../backend/model/price2");
 const ETHUSDTPriceInfo = require("../backend/model/price3");
-const BCHUSDPriceInfo = require("../backend/model/price4");
+const sBCHPriceInfo = require("../backend/model/price4");
 const XTZUSDPriceInfo = require("../backend/model/price5");
 const COMPUSDPriceInfo = require("../backend/model/price6");
 const LTCUSDTPriceInfo = require("../backend/model/price7");
@@ -45,7 +46,14 @@ web3.eth.net.getNetworkType()
 var timeIntervalTUSDPriceCallOracle;
 var timeIntervalforCallOracle;
 var timeIntervalUSDCPriceCallOracle;
-  //------------------------------------------------------XETHXXBTPrice ----------------------------------------------//
+var timeIntervalsBCHPriceCallOracle;
+var timeIntervalXTZPriceCallOracle;
+var timeIntervalCOMPPriceCallOracle;
+var timeIntervaSLTCPriceCallOracle;
+var timeIntervalsADAPriceCallOracle;
+var timeIntervalCOMPPriceCallOracle;
+
+  //------------------------------------------------------wBTPrice ----------------------------------------------//
    function wBTCPrice(){   
     web3.eth.defaultAccount = Key.fromAddress;
   
@@ -77,12 +85,12 @@ var timeIntervalUSDCPriceCallOracle;
         } else {
           console.log("Transaction Hash ===> ",hash)
           console.log("Call to wBTCPrice-Price Initiated")
-          time = setInterval(fetchBTCPrice,30000)
+          time = setInterval(fetchBTCPrice,50000)
         }       
       });
     })
    }
-   timeIntervalforCallOracle = setInterval(wBTCPrice,60000)
+   timeIntervalforCallOracle = setInterval(wBTCPrice,100000)
 
   
   
@@ -113,20 +121,36 @@ var timeIntervalUSDCPriceCallOracle;
           console.log("Current wBTCrice ====>" ,y, "Variance ====>" ,variance)   
           if (variance < -3 || variance > 0.0000003) {
             console.log("Perform swap needed")
+            child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+              console.log(`${stdout}`);
+              console.log(`${stderr}`);
+              if (error !== null) {
+                  console.log(`exec error: ${error}`);
+              }
+          });
           
           } else if (variance === 0){
             console.log("No Perform Swap")
+            if (variance < -3 || variance > 0.0000003) {
+              console.log("Perform swap needed")
+              child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+                console.log(`${stdout}`);
+                console.log(`${stderr}`);
+                if (error !== null) {
+                    console.log(`exec error: ${error}`);
+                }
+            });
             
           } else {
             console.log("No swap needed")
           }
-        
+          }
       })
     } catch (e) {
       console.log(e)
     }
   }
-  fetchBTCPrice()
+  
 
 
 
@@ -163,13 +187,13 @@ function TUSDPrice(){
       } else {
           console.log("Transaction Hash ===> ",hash)
           console.log("Call to TUSDPrice Initiated")
-          time = setInterval(fetchTUSD,30000)
+          time = setInterval(fetchTUSD,50000)
       }     
     });
   })
 }
 
-timeIntervalTUSDPriceCallOracle = setInterval(TUSDPrice,60000)
+timeIntervalTUSDPriceCallOracle = setInterval(TUSDPrice,200000)
 
 
 async function fetchTUSD(){
@@ -207,8 +231,10 @@ async function fetchTUSD(){
     console.log(e)
   }
 }
-fetchTUSD()
 
+
+
+//------------------------------------------------------USDCPrice ----------------------------------------------//
 
 
 
@@ -243,12 +269,12 @@ function USDCPrice(){
       } else {
           console.log("Transaction Hash ===> ",hash)
           console.log("Call to USDC Price Initiated")
-          time = setInterval(fetchUSDCPrice,30000)
+          time = setInterval(fetchUSDCPrice,50000)
       }    
     });
   })
 }
-timeIntervalUSDCPriceCallOracle = setInterval(USDCPrice,60000)
+timeIntervalUSDCPriceCallOracle = setInterval(USDCPrice,300000)
 
 
 
@@ -288,338 +314,450 @@ async function fetchUSDCPrice(){
   }
 }
 
-fetchUSDCPrice()
 
 
-// router.post("/BCHUSDPrice", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
+//------------------------------------------------------ sBCH Price ----------------------------------------------//
 
-//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-//     var contractInstance = new web3.eth.Contract(
-//       Key.interface,
-//       Key.contractAddress
-//     );
-//     let encodedABI = contractInstance.methods.BCHUSDPrice().encodeABI();
 
-//     let rawTx = {
-//       nonce: web3.utils.toHex(txCount),
-//       from: web3.eth.defaultAccount,
-//       to: Key.contractAddress,
-//       gasLimit: '0x3d0900',
-//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-//       chainId: '0x04',
-//       data: encodedABI,
-//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-//     };
+function sBCHPrice(){ 
+  web3.eth.defaultAccount = Key.fromAddress;
 
-//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-//     tx.sign(privateKey);
-//     var serializedTx = tx.serialize();
+  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+    var contractInstance = new web3.eth.Contract(
+      Key.interface,
+      Key.contractAddress
+    );
+    let encodedABI = contractInstance.methods.sBCHPrice().encodeABI();
 
-//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-//       if (err) {
-//         res.status(500).json({ Body: err })
-//       } else {
-//         res.status(200).json({ Body: hash })
-//       }
+    let rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: web3.eth.defaultAccount,
+      to: Key.contractAddress,
+      gasLimit: '0x3d0900',
+      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+      chainId: '0x04',
+      data: encodedABI,
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
+    };
 
-     
-//     });
-//   })
-// });
+    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+    tx.sign(privateKey);
+    var serializedTx = tx.serialize();
 
-// router.get("/priceBCHUSD", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
-//   var contractInstance = new web3.eth.Contract(
-//     Key.interface, Key.contractAddress, {
-//     from: web3.eth.defaultAccount,
-//     gasPrice: "0"
-//   }
-//   );
-//   try {
-//     contractInstance.methods.priceBCHUSD().call().then(async result => { 
-//       var price = new BCHUSDPriceInfo({ priceXETHXXBT : result})
-//       const data = await price.save();         
-//       var v1 = await BCHUSDPriceInfo.find()
-//       .limit(2)
-//       .sort({ "_id": -1 })  
+    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+      if (err) {
+        console.log(err)
+      } else {
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to sBCH Price Initiated")
+          time = setInterval(fetchsBCHPrice,50000)
+      }    
+    });
+  })
+}
+timeIntervalsBCHPriceCallOracle = setInterval(sBCHPrice,400000)
+
+
+
+async function fetchsBCHPrice(){
+  web3.eth.defaultAccount = Key.fromAddress;
+  var contractInstance = new web3.eth.Contract(
+    Key.interface, Key.contractAddress, {
+    from: web3.eth.defaultAccount,
+    gasPrice: "0"
+  }
+  );
+  try {
+    contractInstance.methods.sBCH().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0x36a2422a863d5b950882190ff5433e513413343a"].usd;
+      var price = new sBCHPriceInfo({ priceBCHUSD : y})
+      const data = await price.save();         
+      var v1 = await sBCHPriceInfo.find()
+      .limit(2)
+      .sort({ "_id": -1 })        
+
+       var variance = (y - v1[1].priceBCHUSD)/v1[1].priceBCHUSD*100.00;        
+       console.log("Current  sBCH Price ====>" ,y, " Variance ====>" ,variance)   
+
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+      
+      } else if (variance === 0){
+        console.log("No Perform Swap")
         
+      } else {
+        console.log("No swap needed")
+      }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-//         const resultToInt = parseFloat(result);
-//         var variance = (resultToInt - v1[1].priceBCHUSD)/v1[1].priceBCHUSD*100.00;        
-//        res.status(200).json({ CurrentBCHUSDPrice: resultToInt, Variance :variance  }) 
-//     })
-//   } catch (e) {
-//     res.status(500).json({ Body: e })
-//   }
-// });
-
-
-
+//================================sXTZ =================================//
 
 
 
-// router.post("/XTZUSDPrice", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
+function sXTZPrice(){ 
+  web3.eth.defaultAccount = Key.fromAddress;
 
-//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-//     var contractInstance = new web3.eth.Contract(
-//       Key.interface,
-//       Key.contractAddress
-//     );
-//     let encodedABI = contractInstance.methods.XTZUSDPrice().encodeABI();
+  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+    var contractInstance = new web3.eth.Contract(
+      Key.interface,
+      Key.contractAddress
+    );
+    let encodedABI = contractInstance.methods.sXTZPrice().encodeABI();
 
-//     let rawTx = {
-//       nonce: web3.utils.toHex(txCount),
-//       from: web3.eth.defaultAccount,
-//       to: Key.contractAddress,
-//       gasLimit: '0x3d0900',
-//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-//       chainId: '0x04',
-//       data: encodedABI,
-//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-//     };
+    let rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: web3.eth.defaultAccount,
+      to: Key.contractAddress,
+      gasLimit: '0x3d0900',
+      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+      chainId: '0x04',
+      data: encodedABI,
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
+    };
 
-//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-//     tx.sign(privateKey);
-//     var serializedTx = tx.serialize();
+    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+    tx.sign(privateKey);
+    var serializedTx = tx.serialize();
 
-//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-//       if (err) {
-//         res.status(500).json({ Body: err })
-//       } else {
-//         res.status(200).json({ Body: hash })
-//       }
+    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+      if (err) {
+        console.log(err)
+      } else {
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to sXTZ Price Initiated")
+          time = setInterval(sXTZ,50000)
+      }    
+    });
+  })
+}
+timeIntervalXTZPriceCallOracle = setInterval(sXTZPrice,500000)
 
-     
-//     });
-//   })
-// });
 
-// router.get("/priceXTZUSD", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
-//   var contractInstance = new web3.eth.Contract(
-//     Key.interface, Key.contractAddress, {
-//     from: web3.eth.defaultAccount,
-//     gasPrice: "0"
-//   }
-//   );
-//   try {
-//     contractInstance.methods.priceXTZUSD().call().then(async result => { 
-//       var price = new XTZUSDPriceInfo({ priceXTZUSD : result})
-//       const data = await price.save();         
-//       var v1 = await XTZUSDPriceInfo.find()
-//       .limit(2)
-//       .sort({ "_id": -1 })  
+
+async function sXTZ(){
+  web3.eth.defaultAccount = Key.fromAddress;
+  var contractInstance = new web3.eth.Contract(
+    Key.interface, Key.contractAddress, {
+    from: web3.eth.defaultAccount,
+    gasPrice: "0"
+  }
+  );
+  try {
+    contractInstance.methods.sXTZ().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0xf45b14ddabf0f0e275e215b94dd24ae013a27f12"].usd;
+      var price = new XTZUSDPriceInfo({ priceXTZUSD : y})
+      const data = await price.save();         
+      var v1 = await XTZUSDPriceInfo.find()
+      .limit(2)
+      .sort({ "_id": -1 })        
+
+       var variance = (y - v1[1].priceXTZUSD)/v1[1].priceXTZUSD*100.00;        
+       console.log("Current  sXTZ Price ====>" ,y, " Variance ====>" ,variance)   
+
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+      
+      } else if (variance === 0){
+        if (variance < -3 || variance > 0.0000003) {
+          console.log("Perform swap needed")
+          child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+            console.log(`${stdout}`);
+            console.log(`${stderr}`);
+            if (error !== null) {
+                console.log(`exec error: ${error}`);
+            }
+        });
         
+      } else {
+        console.log("No swap needed")
+      }
+    }
+  })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-//         const resultToInt = parseFloat(result);
-//         var variance = (resultToInt - v1[1].priceXTZUSD)/v1[1].priceXTZUSD*100.00;        
-//        res.status(200).json({ CurrentXTZUSDPrice: resultToInt, Variance :variance  }) 
-//     })
-//   } catch (e) {
-//     res.status(500).json({ Body: e })
-//   }
-// });
+sXTZPrice()
+
+
+//==============================================COMP Price =======================================//
 
 
 
+function COMPPrice(){ 
+  web3.eth.defaultAccount = Key.fromAddress;
+
+  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+    var contractInstance = new web3.eth.Contract(
+      Key.interface,
+      Key.contractAddress
+    );
+    let encodedABI = contractInstance.methods.COMPPrice().encodeABI();
+
+    let rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: web3.eth.defaultAccount,
+      to: Key.contractAddress,
+      gasLimit: '0x3d0900',
+      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+      chainId: '0x04',
+      data: encodedABI,
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
+    };
+
+    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+    tx.sign(privateKey);
+    var serializedTx = tx.serialize();
+
+    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+      if (err) {
+        console.log(err)
+      } else {
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to COMP Price Initiated")
+          time = setInterval(COMP,50000)
+      }    
+    });
+  })
+}
+timeIntervalCOMPPriceCallOracle = setInterval(COMPPrice,600000)
 
 
-// router.post("/COMPUSDPrice", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
 
-//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-//     var contractInstance = new web3.eth.Contract(
-//       Key.interface,
-//       Key.contractAddress
-//     );
-//     let encodedABI = contractInstance.methods.COMPUSDPrice().encodeABI();
+async function COMP(){
+  web3.eth.defaultAccount = Key.fromAddress;
+  var contractInstance = new web3.eth.Contract(
+    Key.interface, Key.contractAddress, {
+    from: web3.eth.defaultAccount,
+    gasPrice: "0"
+  }
+  );
+  try {
+    contractInstance.methods.COMP().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0xc00e94cb662c3520282e6f5717214004a7f26888"].usd;
+      var price = new COMPUSDPriceInfo({ priceCOMPUSD : y})
+      const data = await price.save();         
+      var v1 = await COMPUSDPriceInfo.find()
+      .limit(2)
+      .sort({ "_id": -1 })        
 
-//     let rawTx = {
-//       nonce: web3.utils.toHex(txCount),
-//       from: web3.eth.defaultAccount,
-//       to: Key.contractAddress,
-//       gasLimit: '0x3d0900',
-//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-//       chainId: '0x04',
-//       data: encodedABI,
-//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-//     };
+       var variance = (y - v1[1].priceCOMPUSD)/v1[1].priceCOMPUSD*100.00;        
+       console.log("Current  COMP  Price ====>" ,y, " Variance ====>" ,variance)   
 
-//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-//     tx.sign(privateKey);
-//     var serializedTx = tx.serialize();
-
-//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-//       if (err) {
-//         res.status(500).json({ Body: err })
-//       } else {
-//         res.status(200).json({ Body: hash })
-//       }
-
-     
-//     });
-//   })
-// });
-
-// router.get("/priceCOMPUSD", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
-//   var contractInstance = new web3.eth.Contract(
-//     Key.interface, Key.contractAddress, {
-//     from: web3.eth.defaultAccount,
-//     gasPrice: "0"
-//   }
-//   );
-//   try {
-//     contractInstance.methods.priceCOMPUSD().call().then(async result => { 
-//       var price = new COMPUSDPriceInfo({ priceCOMPUSD : result})
-//       const data = await price.save();         
-//       var v1 = await COMPUSDPriceInfo.find()
-//       .limit(2)
-//       .sort({ "_id": -1 })  
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+        child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+          console.log(`${stdout}`);
+          console.log(`${stderr}`);
+          if (error !== null) {
+              console.log(`exec error: ${error}`);
+          }
+      });
+      
+      } else if (variance === 0){
+        console.log("No Perform Swap")
+        child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+          console.log(`${stdout}`);
+          console.log(`${stderr}`);
+          if (error !== null) {
+              console.log(`exec error: ${error}`);
+          }
+      });
         
+      } else {
+        console.log("No swap needed")
+      }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-//         const resultToInt = parseFloat(result);
-//         var variance = (resultToInt - v1[1].priceCOMPUSD)/v1[1].priceCOMPUSD*100.00;        
-//        res.status(200).json({ CurrentCOMPUSDPrice: resultToInt, Variance :variance  }) 
-//     })
-//   } catch (e) {
-//     res.status(500).json({ Body: e })
-//   }
-// });
+COMPPrice()
+
+// ====================================== sLTC ================================================//
 
 
 
+function sLTCPrice(){ 
+  web3.eth.defaultAccount = Key.fromAddress;
 
-// router.post("/LTCUSDTPrice", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
+  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+    var contractInstance = new web3.eth.Contract(
+      Key.interface,
+      Key.contractAddress
+    );
+    let encodedABI = contractInstance.methods.sLTCPrice().encodeABI();
 
-//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-//     var contractInstance = new web3.eth.Contract(
-//       Key.interface,
-//       Key.contractAddress
-//     );
-//     let encodedABI = contractInstance.methods.LTCUSDTPrice().encodeABI();
+    let rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: web3.eth.defaultAccount,
+      to: Key.contractAddress,
+      gasLimit: '0x3d0900',
+      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+      chainId: '0x04',
+      data: encodedABI,
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
+    };
 
-//     let rawTx = {
-//       nonce: web3.utils.toHex(txCount),
-//       from: web3.eth.defaultAccount,
-//       to: Key.contractAddress,
-//       gasLimit: '0x3d0900',
-//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-//       chainId: '0x04',
-//       data: encodedABI,
-//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-//     };
+    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+    tx.sign(privateKey);
+    var serializedTx = tx.serialize();
 
-//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-//     tx.sign(privateKey);
-//     var serializedTx = tx.serialize();
+    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+      if (err) {
+        console.log(err)
+      } else {
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to sLTCPrice Initiated")
+          time = setInterval(sLTC,50000)
+      }    
+    });
+  })
+}
+timeIntervaSLTCPriceCallOracle = setInterval(sLTCPrice,700000)
 
-//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-//       if (err) {
-//         res.status(500).json({ Body: err })
-//       } else {
-//         res.status(200).json({ Body: hash })
-//       }
 
-     
-//     });
-//   })
-// });
 
-// router.get("/priceLTCUSDT", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
-//   var contractInstance = new web3.eth.Contract(
-//     Key.interface, Key.contractAddress, {
-//     from: web3.eth.defaultAccount,
-//     gasPrice: "0"
-//   }
-//   );
-//   try {
-//     contractInstance.methods.priceLTCUSDT().call().then(async result => { 
-//       var price = new LTCUSDTPriceInfo({ priceLTCUSDT : result})
-//       const data = await price.save();         
-//       var v1 = await LTCUSDTPriceInfo.find()
-//       .limit(2)
-//       .sort({ "_id": -1 })  
+async function sLTC(){
+  web3.eth.defaultAccount = Key.fromAddress;
+  var contractInstance = new web3.eth.Contract(
+    Key.interface, Key.contractAddress, {
+    from: web3.eth.defaultAccount,
+    gasPrice: "0"
+  }
+  );
+  try {
+    contractInstance.methods.sLTC().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0xc14103c2141e842e228fbac594579e798616ce7a"].usd;
+      var price = new LTCUSDTPriceInfo({ priceLTCUSDT : y})
+      const data = await price.save();         
+      var v1 = await LTCUSDTPriceInfo.find()
+      .limit(2)
+      .sort({ "_id": -1 })        
+
+       var variance = (y - v1[1].priceLTCUSDT)/v1[1].priceLTCUSDT*100.00;        
+       console.log("Current  sLTC  Price ====>" ,y, " Variance ====>" ,variance)   
+
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+      
+      } else if (variance === 0){
+        console.log("No Perform Swap")
         
-
-//         const resultToInt = parseFloat(result);
-//         var variance = (resultToInt - v1[1].priceLTCUSDT)/v1[1].priceLTCUSDT*100.00;        
-//         res.status(200).json({ CurrentLTCUSDTPrice: resultToInt, Variance :variance  }) 
-//     })
-//   } catch (e) {
-//     res.status(500).json({ Body: e })
-//   }
-// });
-
+      } else {
+        console.log("No swap needed")
+      }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
 
+// =======================================aADA ============================================//
 
-// router.post("/ADAUSDPrice", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
 
-//   web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
-//     var contractInstance = new web3.eth.Contract(
-//       Key.interface,
-//       Key.contractAddress
-//     );
-//     let encodedABI = contractInstance.methods.ADAUSDPrice().encodeABI();
+function sADAPrice(){ 
+  web3.eth.defaultAccount = Key.fromAddress;
 
-//     let rawTx = {
-//       nonce: web3.utils.toHex(txCount),
-//       from: web3.eth.defaultAccount,
-//       to: Key.contractAddress,
-//       gasLimit: '0x3d0900',
-//       gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
-//       chainId: '0x04',
-//       data: encodedABI,
-//       value: web3.utils.toHex(web3.utils.toWei('0.1', 'ether'))
-//     };
+  web3.eth.getTransactionCount(web3.eth.defaultAccount, (err, txCount) => {
+    var contractInstance = new web3.eth.Contract(
+      Key.interface,
+      Key.contractAddress
+    );
+    let encodedABI = contractInstance.methods.sADAPrice().encodeABI();
 
-//     var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
-//     tx.sign(privateKey);
-//     var serializedTx = tx.serialize();
+    let rawTx = {
+      nonce: web3.utils.toHex(txCount),
+      from: web3.eth.defaultAccount,
+      to: Key.contractAddress,
+      gasLimit: '0x3d0900',
+      gasPrice: web3.utils.toHex(web3.utils.toWei('300', 'gwei')),
+      chainId: '0x04',
+      data: encodedABI,
+      value: web3.utils.toHex(web3.utils.toWei('0.01', 'ether'))
+    };
 
-//     web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
-//       if (err) {
-//         res.status(500).json({ Body: err })
-//       } else {
-//         res.status(200).json({ Body: hash })
-//       }
+    var tx = new EthereumTx(rawTx, { 'chain': 'rinkeby' });
+    tx.sign(privateKey);
+    var serializedTx = tx.serialize();
 
-     
-//     });
-//   })
-// });
+    web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+      if (err) {
+        console.log(err)
+      } else {
+          console.log("Transaction Hash ===> ",hash)
+          console.log("Call to sADAPrice Initiated")
+          time = setInterval(sADA,50000)
+      }    
+    });
+  })
+}
+timeIntervalsADAPriceCallOracle = setInterval(sADAPrice ,80000)
 
-// router.get("/priceADAUSD", (req, res) => {
-//   web3.eth.defaultAccount = Key.fromAddress;
-//   var contractInstance = new web3.eth.Contract(
-//     Key.interface, Key.contractAddress, {
-//     from: web3.eth.defaultAccount,
-//     gasPrice: "0"
-//   }
-//   );
-//   try {
-//     contractInstance.methods.priceADAUSD().call().then(async result => { 
-//       var price = new ADAUSDPriceInfo({ priceADAUSD : result})
-//       const data = await price.save();         
-//       var v1 = await ADAUSDPriceInfo.find()
-//       .limit(2)
-//       .sort({ "_id": -1 })  
+
+
+async function sADA(){
+  web3.eth.defaultAccount = Key.fromAddress;
+  var contractInstance = new web3.eth.Contract(
+    Key.interface, Key.contractAddress, {
+    from: web3.eth.defaultAccount,
+    gasPrice: "0"
+  }
+  );
+  try {
+    contractInstance.methods.sADA().call().then(async result => { 
+      var x = JSON.parse(result)  
+      const y = x["0xe36e2d3c7c34281fa3bc737950a68571736880a1"].usd;
+      var price = new ADAUSDPriceInfo({ priceADAUSD : y})
+      const data = await price.save();         
+      var v1 = await ADAUSDPriceInfo.find()
+      .limit(2)
+      .sort({ "_id": -1 })        
+
+       var variance = (y - v1[1].priceADAUSD )/v1[1].priceADAUSD*100.00;        
+       console.log("Current  sADA  Price ====>" ,y, " Variance ====>" ,variance)   
+
+       if (variance < -3 || variance > 0.0000003) {
+        console.log("Perform swap needed")
+      
+      } else if (variance === 0){
+        console.log("No Perform Swap")
+        child_process.exec('node ../swap-wth-1inch/swap/busdSwap.js', (error, stdout, stderr) => {
+          console.log(`${stdout}`);
+          console.log(`${stderr}`);
+          if (error !== null) {
+              console.log(`exec error: ${error}`);
+          }
+      });
         
+      } else {
+        console.log("No swap needed")
+      }
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-//         const resultToInt = parseFloat(result);
-//         var variance = (resultToInt - v1[1].priceADAUSD)/v1[1].priceADAUSD*100.00;        
-//        res.status(200).json({ CurrentADAUSDPrice: resultToInt, Variance :variance  }) 
-//     })
-//   } catch (e) {
-//     res.status(500).json({ Body: e })
-//   }
-// });
+wBTCPrice()
+TUSDPrice()
+USDCPrice()
+sBCHPrice()
+sXTZPrice()
+COMPPrice()
+sLTCPrice()
+sADAPrice()
 
 
 module.exports = router;

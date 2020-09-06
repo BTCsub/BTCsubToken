@@ -88,7 +88,7 @@ async function getQuote(fromToken, toToken, amount, callback) {
     }
     console.log("Trade From: " + fromToken)
     console.log("Trade To: " + toToken);
-    console.log("Trade Amount: " + amountToExchange + " DAI ");
+    console.log("Trade Amount: " + amountToExchange + " BUSD ");
     
     console.log("FOR   " + new BigNumber(quote.returnAmount).shiftedBy(-fromTokenDecimals).toString() + " ETH ");
     console.log("======== RETURN QUOTE ========= ",quote.returnAmount)

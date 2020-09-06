@@ -5,7 +5,7 @@ const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
 const erc20ABI = require('./abis/sbch.json');
-const daiAddress = "0x36a2422a863D5B950882190Ff5433E513413343a"; //dai mainnet address
+const daiAddress = "0x36a2422a863D5B950882190Ff5433E513413343a"; 
 
 const fromAddress = "0x017cf1489eb1FF78Ef8797dfC09662c845e187B9";
 
@@ -15,7 +15,7 @@ const fromTokenDecimals = 18;
 const toToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'; // ETH
 const toTokenDecimals = 18;
 
-const amountToExchange = new BigNumber(10);
+const amountToExchange = new BigNumber(1);
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545', { timeout: 20000000 }));
 
@@ -88,7 +88,7 @@ async function getQuote(fromToken, toToken, amount, callback) {
     }
     console.log("Trade From: " + fromToken)
     console.log("Trade To: " + toToken);
-    console.log("Trade Amount: " + amountToExchange + " DAI ");
+    console.log("Trade Amount: " + amountToExchange + " sBCH ");
     
     console.log("FOR   " + new BigNumber(quote.returnAmount).shiftedBy(-fromTokenDecimals).toString() + " ETH ");
     console.log("======== RETURN QUOTE ========= ",quote.returnAmount)
@@ -108,7 +108,7 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
         // We get the balance before the swap just for logging purpose
         let ethBalanceBefore = await web3.eth.getBalance(fromAddress);
         let daiBalanceBefore = await daiToken.methods.balanceOf(fromAddress).call();
-        console.log(" ====== ETH BALANCE BEFORE SWAP =======",ethBalanceBefore, " ========= DAI BALANCE BEFORE SWAP ========= ",daiBalanceBefore)
+        console.log(" ====== ETH BALANCE BEFORE SWAP =======",ethBalanceBefore, " ========= sBCH BALANCE BEFORE SWAP ========= ",daiBalanceBefore)
 
         let slippage = new BigNumber(3/100 *quote.returnAmount).toFixed();
         
@@ -128,7 +128,7 @@ getQuote(fromToken, toToken, amountWithDecimals, function(quote) {
             let ethBalanceAfter = await web3.eth.getBalance(fromAddress);
             let daiBalanceAfter = await daiToken.methods.balanceOf(fromAddress).call();
             console.log("Final balances:")
-            console.log("Change in ETH balance", new BigNumber(ethBalanceAfter).minus(ethBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
+            console.log("Change in sBCH balance", new BigNumber(ethBalanceAfter).minus(ethBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
             console.log("Change in DAI balance", new BigNumber(daiBalanceAfter).minus(daiBalanceBefore).shiftedBy(-fromTokenDecimals).toFixed(2));
         });
     });
