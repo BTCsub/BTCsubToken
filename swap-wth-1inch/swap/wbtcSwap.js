@@ -4,10 +4,10 @@ const BigNumber = require('bignumber.js');
 const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
-const erc20ABI = require('./abis/erc20.json');
-const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"; //dai mainnet address
+const erc20ABI = require('./abis/wbtc.json');
+const daiAddress = "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"; //dai mainnet address
 
-const fromAddress = "0xD3E52099a6a48F132Cb23b1364B7dEE212d862F6";
+const fromAddress = "0x4f58985B75EeC8f14C536878A19EAdF4a1960D6c";
 
 const fromToken = daiAddress;
 const fromTokenDecimals = 18;

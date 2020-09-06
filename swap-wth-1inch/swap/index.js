@@ -5,7 +5,7 @@ const oneSplitABI = require('./abis/onesplit.json');
 const onesplitAddress = "0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E"; // 1plit contract address on Main net
 
 
-const erc20ABI = require('./abis/wbtc.json');
+//const erc20ABI = require('./abis/wbtc.json');
 const busdABI = require('./abis/busd.json');
 const compABI = require('./abis/comp.json');
 const tusdABI = require('./abis/tusd.json');
