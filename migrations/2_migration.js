@@ -1,5 +1,5 @@
-const DataOracle = artifacts.require("./DataOracle.sol");
+const PriceTicker = artifacts.require("./PriceTicker.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(DataOracle);
+  deployer.deploy(PriceTicker);
 };

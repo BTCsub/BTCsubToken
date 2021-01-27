@@ -3,11 +3,11 @@ const Schema = mongoose.Schema;
 
 const PriceInfoSchema = new Schema(
   {
-    priceXETHXXBT: {
+    priceCOMPUSD: {
       type: Number     
     },   
   },
   { timestamps: true }
 );
 
-module.exports = PriceInfo = mongoose.model("priceXETHXXBT", PriceInfoSchema);
+module.exports = PriceInfo = mongoose.model("priceCOMPUSD", PriceInfoSchema);
